@@ -1,0 +1,21 @@
+{% extends 'shopapp/base.html' %}
+
+{% block title %}
+        Shop index
+{% endblock %}
+
+{% block body %}
+<h1>Hello, {{ username|capfirst }}!</h1>
+<div>
+    Curren datetime: {{ datetime|date:'r' }}
+</div>
+<div>
+    <ul>
+       {% for product in products|dictsort:1  %}
+           <li> {{ product.0 }} for ${{ product.1 }}</li>
+       {% empty %}
+           No products here!
+       {% endfor %}
+    </ul>
+</div>
+{% endblock %}
