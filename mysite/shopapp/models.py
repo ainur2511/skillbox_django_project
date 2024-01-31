@@ -4,7 +4,7 @@ from django.db import models
 
 class Product(models.Model):
     class Meta:
-        ordering = ['name']
+        ordering = ['name', 'price']
 
     name = models.CharField(max_length=100)
     description = models.TextField(null=False, blank=True)
@@ -13,9 +13,17 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     archived = models.BooleanField(default=False)
 
+    def __str__(self):
+        return self.name
+
 class Order(models.Model):
+    class Meta:
+        verbose_name_plural = "Orders"
     delivery_address = models.TextField(null=True, blank=True)
     promocode = models.CharField(max_length=20, null=False, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.PROTECT)
     products = models.ManyToManyField(Product, related_name='orders')
+
+    def __str__(self):
+        return self.delivery_address
