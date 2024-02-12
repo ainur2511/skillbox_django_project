@@ -6,10 +6,11 @@
 
 {% block body %}
     <h1>Orders:</h1>
-    {% if orders %}
+    {% if object_list %}
        <div>
-       {% for order in orders %}
+       {% for order in object_list %}
            <div>
+                <p><a href="{% url 'shopapp:orders_detail' pk=order.pk %}">Detail for order # {{ order.pk }}</a> </p>
                <p>Order by: {% firstof order.name.first_name order.user.username %}</p>
                <p>Promocode: <code> {{ order.promocode }}</code></p>
                <p>Delivery adress: {{ order.delivery_address }}</p>
