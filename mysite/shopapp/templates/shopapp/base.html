@@ -17,6 +17,15 @@
     </style>
 </head>
 <body>
+<header>
+    <div>
+        <form action="{% url "myauth:logout" %}" method="POST">
+            {% csrf_token %}
+            <button type="submit">Log out</button>
+        </form>
+    </div>
+</header>
+
 
 {% block body %}
 Base body
