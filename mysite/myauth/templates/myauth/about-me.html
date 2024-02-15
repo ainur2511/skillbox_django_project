@@ -1,0 +1,28 @@
+{% extends 'myauth/base.html' %}
+
+
+{% block title %}
+    About me
+{% endblock title %}
+
+{% block body %}
+    <header>
+    <div>
+        <form action="{% url "myauth:logout" %}" method="POST">
+            {% csrf_token %}
+            <button class='btn btn-danger' type="submit">Log out</button>
+        </form>
+    </div>
+    </header>
+    <h1>User info</h1>
+    {% if user.is_authenticated %}
+        <h2>Detail</h2>
+        <p>Username: {{ user.username }}</p>
+        <p>First name: {{ user.first_name }}</p>
+        <p>Lastname: {{ user.last_name }}</p>
+        <p>Email: {{ user.email }}</p>
+        <p>Bio: {{ user.profile.bio }}</p>
+    {% else %}
+        <h2>User is anonymous</h2>
+    {% endif %}
+{% endblock body %}

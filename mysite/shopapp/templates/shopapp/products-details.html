@@ -11,13 +11,18 @@
         <div>Price: {{ product.price }}</div>
         <div>Discount: {{ product.discount }}</div>
         <div>Archived: {{ product.archived }}</div>
+        <div>Created by: {{ product.created_by }}</div>
     </div>
-    <div>
-        <a href="{% url 'shopapp:products_update' pk=product.pk %}">Update product</a>
-    </div>
-    <div>
-        <a href="{% url 'shopapp:products_delete' pk=product.pk %}">Archive product</a>
-    </div>
+    {%  if perms.shopapp.change_product  and product.created_by == user or user.is_superuser %}
+        <div>
+            <a href="{% url 'shopapp:products_update' pk=product.pk %}">Update product</a>
+        </div>
+        <div>
+            <a href="{% url 'shopapp:products_delete' pk=product.pk %}">Archive product</a>
+        </div>
+    {% else %}
+        <p>You have no permissions to update and delete product</p>
+    {% endif %}
     <div>
     <a href="{% url 'shopapp:products_list' %}">
         Back to products list

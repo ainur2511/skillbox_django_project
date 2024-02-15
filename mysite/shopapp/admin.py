@@ -27,13 +27,14 @@ class OrderInline(admin.TabularInline):
 class ProductAdmin(admin.ModelAdmin, ExportAsCSVMixin):
     actions = [mark_archived, mark_unarchived, 'export_as_csv']
     inlines = [OrderInline]
-    list_display = 'pk', 'name', 'description_short', 'price', 'discount', 'archived'
+    list_display = 'pk', 'name', 'description_short', 'price', 'discount', 'archived', 'created_by'
     list_display_links = 'pk', 'name'
     ordering = 'pk',
     search_fields = 'name', 'description', 'price', 'discount'
+    readonly_fields = ['created_by', 'created_at']
     fieldsets = [
         (None, {
-            'fields': ('name', 'description')
+            'fields': ('name', 'description', 'created_by', 'created_at')
         }),
         ('Price options', {
             'fields': ('price', 'discount'),
@@ -46,11 +47,17 @@ class ProductAdmin(admin.ModelAdmin, ExportAsCSVMixin):
         })
 
     ]
+    def get_queryset(self, request):
+        return Product.objects.select_related('created_by')
 
     def description_short(self, obj: Product) -> str:
         if len(obj.description) < 48:
             return obj.description
         return obj.description[:48] + '...'
+
+    def save_model(self, request, obj, form, change):
+        obj.created_by = request.user
+        obj.save()
 
 
 class ProductInline(admin.TabularInline):
