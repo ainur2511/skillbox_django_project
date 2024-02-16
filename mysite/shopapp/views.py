@@ -1,6 +1,7 @@
 from datetime import datetime
 
-from django.contrib.auth.models import Group
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.models import Group, Permission, User
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpRequest, HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
@@ -10,37 +11,6 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from .forms import GroupForm, OrderForm
 from shopapp.models import Product, Order
 
-
-class ShopIndexView(View):
-    def get(self, request: HttpRequest) -> HttpResponse:
-        username = 'ainur'
-        products = [
-            ('Laptop', 1999),
-            ('Desktop', 2999),
-            ('Smartphone', 999)
-        ]
-        context = {
-            'datetime': datetime.now(),
-            'products': products,
-            'username': username
-        }
-        return render(request, 'shopapp/shop-index.html', context=context)
-
-
-class GroupsListView(View):
-    def get(self, request: HttpRequest) -> HttpResponse:
-        context = {
-            'form': GroupForm(),
-            'groups': Group.objects.prefetch_related('permissions').all()
-        }
-        return render(request, 'shopapp/groups-list.html', context=context)
-
-    def post(self, request: HttpRequest) -> HttpResponse:
-        form = GroupForm(request.POST)
-        if form.is_valid():
-            form.save()
-
-        return redirect(request.path)
 
 
 class ProductsDetailsView(DetailView):
@@ -56,13 +26,19 @@ class ProductListView(ListView):
     queryset = Product.objects.filter(archived=False)
 
 
-class ProductCreateView(CreateView):
+class ProductCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
+    permission_required = 'shopapp.add_product'
     model = Product
     fields = '__all__'
     success_url = reverse_lazy('shopapp:products_list')
 
+    def form_valid(self, form):
+        form.instance.created_by = self.request.user
+        return super().form_valid(form)
 
-class ProductUpdateView(UpdateView):
+
+class ProductUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
+    permission_required = 'shopapp.change_product'
     model = Product
     fields = ['name', 'price', 'description', 'discount']
     template_name_suffix = '_update_form'
@@ -74,7 +50,8 @@ class ProductUpdateView(UpdateView):
         )
 
 
-class ProductDeleteView(DeleteView):
+class ProductDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
+    permission_required = 'shopapp.delete_product'
     model = Product
     success_url = reverse_lazy('shopapp:products_list')
 
@@ -85,13 +62,13 @@ class ProductDeleteView(DeleteView):
         return HttpResponseRedirect(success_url)
 
 
-class OrderCreateView(CreateView):
+class OrderCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     form_class = OrderForm
     model = Order
     success_url = reverse_lazy('shopapp:order_list')
 
 
-class OrderUpdateView(UpdateView):
+class OrderUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     form_class = OrderForm
     model = Order
     template_name_suffix = '_update_form'
@@ -102,14 +79,14 @@ class OrderUpdateView(UpdateView):
             kwargs={'pk': self.object.pk})
 
 
-class OrderDeleteView(DeleteView):
+class OrderDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     model = Order
     success_url = reverse_lazy('shopapp:order_list')
 
 
-class OrderDetailView(DetailView):
+class OrderDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
     queryset = (Order.objects.select_related('user').prefetch_related('products'))
 
 
-class OrderListView(ListView):
+class OrderListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
     queryset = (Order.objects.select_related('user').prefetch_related('products'))

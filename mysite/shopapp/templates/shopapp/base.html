@@ -18,6 +18,7 @@
 </head>
 <body>
 <header>
+    <h1>Hello, {% firstof  user.first_name|capfirst username %}!</h1>
     <div>
         <form action="{% url "myauth:logout" %}" method="POST">
             {% csrf_token %}
@@ -30,6 +31,8 @@
 {% block body %}
 Base body
 {% endblock %}
+
+
 
 </body>
 
