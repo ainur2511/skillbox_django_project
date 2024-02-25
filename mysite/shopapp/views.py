@@ -1,23 +1,20 @@
-from datetime import datetime
-
-from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
-from django.contrib.auth.models import Group, Permission, User
-from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpRequest, HttpResponseRedirect, JsonResponse
 from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.views.generic.edit import ModelFormMixin
 
-from .forms import GroupForm, OrderForm
-from shopapp.models import Product, Order
+from .forms import ProductForm, OrderForm
+from shopapp.models import Product, Order, ProductImage
 
 
 
 class ProductsDetailsView(DetailView):
     template_name = 'shopapp/products-details.html'
-    model = Product
+    # model = Product
     context_object_name = 'product'
+    queryset = Product.objects.prefetch_related('images')
 
 
 class ProductListView(ListView):
@@ -41,8 +38,15 @@ class ProductCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView)
 class ProductUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     permission_required = 'shopapp.change_product'
     model = Product
-    fields = ['name', 'price', 'description', 'discount']
+    # fields = ['name', 'price', 'description', 'discount', 'preview']
+    form_class = ProductForm
     template_name_suffix = '_update_form'
+
+    def form_valid(self, form):
+        images = form.files.getlist('images')
+        for image in images:
+            ProductImage.objects.create(product=self.object, image=image)
+        return super(ModelFormMixin, self).form_valid(form)
 
     def get_success_url(self):
         return reverse(
