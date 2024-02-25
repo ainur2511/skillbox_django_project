@@ -6,14 +6,6 @@
 {% endblock title %}
 
 {% block body %}
-    <header>
-    <div>
-        <form action="{% url "myauth:logout" %}" method="POST">
-            {% csrf_token %}
-            <button class='btn btn-danger' type="submit">Log out</button>
-        </form>
-    </div>
-    </header>
     <h1>User info</h1>
     {% if user.is_authenticated %}
         <h2>Detail</h2>
@@ -22,6 +14,16 @@
         <p>Lastname: {{ user.last_name }}</p>
         <p>Email: {{ user.email }}</p>
         <p>Bio: {{ user.profile.bio }}</p>
+        <div>
+            {% if user.profile.avatar %}
+                <a href={% url 'myauth:update_profile' pk=user.pk %}>
+                    <img style="width: 300px; height: auto" src='{{ user.profile.avatar.url }}' alt="{{ user.profile.avatar.name }}">
+                </a>
+                <p>Фото профиля. Нажмите на картинку, чтобы изменить</p>
+            {% else %} 
+                <p>No avatar for <strong>{{ user.username }}</strong> yet</p>                            
+            {% endif %}
+        </div>
     {% else %}
         <h2>User is anonymous</h2>
     {% endif %}

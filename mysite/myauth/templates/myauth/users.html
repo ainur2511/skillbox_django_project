@@ -1,0 +1,29 @@
+{% extends 'myauth/base.html' %}
+
+
+{% block title %}
+    Users
+{% endblock title %}
+
+{% block body %}
+    <h1>Users info</h1>
+    {% if user.is_authenticated %}
+        {% for user_profile in object_list %}
+            <p>Username: {{ user_profile.username }}</p>
+            <p>First name: {{ user_profile.first_name }}</p>
+            <p>Lastname: {{ user_profile.last_name }}</p>
+            <p>Email: {{ user_profile.email }}</p>
+            <a href={% url 'myauth:about_user' pk=user_profile.pk %}>See profile</a>
+            <div>
+                {% if user_profile.profile.avatar %}
+                    <img style="width: 300px; height: auto" src='{{ user_profile.profile.avatar.url }}' alt='{{ user_profile.profile.avatar.name }}'>
+                    <p>Фото профиля.</p>
+                {% else %} 
+                    <p>No avatar for <strong>{{ user_profile.username }}</strong> yet</p>                            
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% else %}
+        <h2>User is anonymous. You cannot see profiles.</h2>
+    {% endif %}
+{% endblock body %}

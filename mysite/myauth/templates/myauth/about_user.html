@@ -1,0 +1,35 @@
+{% extends 'myauth/base.html' %}
+
+
+{% block title %}
+    About me
+{% endblock title %}
+
+{% block body %}
+    <h1>User info</h1>
+    {% if request.user.is_authenticated %}
+        <h2>Detail</h2>
+        <p>Username: {{ user.username }}</p>
+        <p>First name: {{ user.first_name }}</p>
+        <p>Lastname: {{ user.last_name }}</p>
+        <p>Email: {{ user.email }}</p>
+        <p>Bio: {{ user.profile.bio }}</p>
+        <div>
+            {% if user.profile.avatar %}
+                    <img style="width: 300px; height: auto" src='{{ user.profile.avatar.url }}' alt="{{ user.profile.avatar.name }}">
+            {% else %} 
+
+                    <p>No avatar for <strong>{{ user.username }}</strong> yet</p>                 
+            {% endif %}
+            {% if request.user.is_staff %}
+                <a href={% url 'myauth:update_profile' pk=user.pk%}><strong>Редактировать {{ user.username }}</strong></a>
+            {% elif request.user.pk == user.pk %}
+                <a href={% url 'myauth:update_profile' pk=user.pk%}><strong>Редактировать {{ user.username }}</strong></a>
+            {% else %}
+                <p>You have no permissions to update this profile</p>
+            {% endif %}
+        </div>
+    {% else %}
+        <h2>User is anonymous</h2>
+    {% endif %}
+{% endblock body %}

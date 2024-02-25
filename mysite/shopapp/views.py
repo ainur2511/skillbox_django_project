@@ -1,22 +1,20 @@
-from datetime import datetime
-
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from django.contrib.auth.models import Group, Permission, User
-from django.shortcuts import render, redirect
-from django.http import HttpResponse, HttpRequest, HttpResponseRedirect
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
+from django.http import HttpResponse, HttpRequest, HttpResponseRedirect, JsonResponse
 from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.views.generic.edit import ModelFormMixin
 
-from .forms import GroupForm, OrderForm
-from shopapp.models import Product, Order
+from .forms import ProductForm, OrderForm
+from shopapp.models import Product, Order, ProductImage
 
 
 
 class ProductsDetailsView(DetailView):
     template_name = 'shopapp/products-details.html'
-    model = Product
+    # model = Product
     context_object_name = 'product'
+    queryset = Product.objects.prefetch_related('images')
 
 
 class ProductListView(ListView):
@@ -40,8 +38,15 @@ class ProductCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView)
 class ProductUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     permission_required = 'shopapp.change_product'
     model = Product
-    fields = ['name', 'price', 'description', 'discount']
+    # fields = ['name', 'price', 'description', 'discount', 'preview']
+    form_class = ProductForm
     template_name_suffix = '_update_form'
+
+    def form_valid(self, form):
+        images = form.files.getlist('images')
+        for image in images:
+            ProductImage.objects.create(product=self.object, image=image)
+        return super(ModelFormMixin, self).form_valid(form)
 
     def get_success_url(self):
         return reverse(
@@ -62,13 +67,13 @@ class ProductDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView)
         return HttpResponseRedirect(success_url)
 
 
-class OrderCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
+class OrderCreateView(LoginRequiredMixin,  CreateView):
     form_class = OrderForm
     model = Order
     success_url = reverse_lazy('shopapp:order_list')
 
 
-class OrderUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
+class OrderUpdateView(LoginRequiredMixin, UpdateView):
     form_class = OrderForm
     model = Order
     template_name_suffix = '_update_form'
@@ -79,14 +84,34 @@ class OrderUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
             kwargs={'pk': self.object.pk})
 
 
-class OrderDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
+class OrderDeleteView(LoginRequiredMixin,  DeleteView):
     model = Order
     success_url = reverse_lazy('shopapp:order_list')
 
 
-class OrderDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
+class OrderDetailView(PermissionRequiredMixin, LoginRequiredMixin, DetailView):
+    permission_required = 'shopapp.view_order'
     queryset = (Order.objects.select_related('user').prefetch_related('products'))
 
 
-class OrderListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
+class OrderListView(LoginRequiredMixin, ListView):
     queryset = (Order.objects.select_related('user').prefetch_related('products'))
+
+
+class OrdersDataExportView(UserPassesTestMixin, View):
+
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def get(self, request: HttpRequest) -> JsonResponse:
+        orders = Order.objects.order_by('pk').all()
+        orders_data = [{
+            'pk': order.pk,
+            'delivery_address': order.delivery_address,
+            'promocode': order.promocode,
+            'user': order.user.pk,
+            'products': [product.pk for product in order.products.all()]
+        }
+            for order in orders
+        ]
+        return JsonResponse({'orders': orders_data})

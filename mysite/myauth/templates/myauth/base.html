@@ -21,16 +21,45 @@
         }
         .login{
             height: 300px;
-            width: 300px;
+            width: 400px;
             display: flex;
             justify-content: center;
             align-items: center;
         }
+        
+        header {
+            display: flex;
+            flex-direction: row;
+            margin: 3px;
+        }
+         
+        header div{
+            margin: 3px;
+        }
+        
     </style>
 </head>
 <body>
+<header>
+{% if request.user.is_authenticated %}
+<div>
+    <form action="{% url "myauth:logout" %}" method="POST">
+        {% csrf_token %}
+        <button class='btn btn-danger' type="submit">Log out</button>
+    </form>
+</div>
+<div>
+    <a href={% url 'myauth:update_profile' pk=request.user.pk%}>
+        <button class='btn btn-warning'>Update my profile</button> 
+    </a>
+</div>
+    
+        <p>Hi, {{ request.user.username }}</p>
+{% endif %}
+</header>
 
 {% block body %}
+
 Base body
 {% endblock %}
 

@@ -8,8 +8,8 @@
     <h1>Order #{{ object.pk }}</h1>
     <div>
        <p>Order by: {% firstof object.name.first_name object.user.username %}</p>
-{#       <p>Promocode: <code> {{ object.promocode }}</code></p>#}
-{#       <p>Delivery adress: {{ object.delivery_address }}</p>#}
+       <p>Promocode: <code> {{ object.promocode }}</code></p>
+       <p>Delivery adress: {{ object.delivery_address }}</p>
         
        <div>
            Product in order:
