@@ -1,12 +1,13 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 from django.http import HttpResponse, HttpRequest, HttpResponseRedirect, JsonResponse
 from django.urls import reverse, reverse_lazy
+from django.utils.translation import gettext_lazy as _, ngettext_lazy as ngt
 from django.views import View
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.views.generic.edit import ModelFormMixin
-
 from .forms import ProductForm, OrderForm
 from shopapp.models import Product, Order, ProductImage
+
 
 
 
@@ -115,3 +116,9 @@ class OrdersDataExportView(UserPassesTestMixin, View):
             for order in orders
         ]
         return JsonResponse({'orders': orders_data})
+
+
+class HelloView(View):
+    def get(self, request: HttpRequest) -> HttpResponse:
+        some_text = _('Hello World!')
+        return HttpResponse(f'<h1>{some_text}</h1>')
