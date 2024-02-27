@@ -2,6 +2,8 @@ import profile
 
 from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import path
+
+from shopapp.views import HelloView
 from .views import *
 
 
