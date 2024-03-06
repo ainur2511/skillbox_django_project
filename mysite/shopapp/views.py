@@ -5,8 +5,59 @@ from django.utils.translation import gettext_lazy as _, ngettext_lazy as ngt
 from django.views import View
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.views.generic.edit import ModelFormMixin
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import viewsets
+from rest_framework.filters import SearchFilter, OrderingFilter
+
 from .forms import ProductForm, OrderForm
 from shopapp.models import Product, Order, ProductImage
+from .serializers import ProductSerializer, OrderSerializer
+
+
+class OrderViewSet(viewsets.ModelViewSet):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    filter_backends = [
+        SearchFilter,
+        DjangoFilterBackend,
+        OrderingFilter,
+    ]
+    search_fields = [
+        'user__username'
+    ]
+    filterset_fields = [
+        'user__username',
+        'delivery_address'
+    ]
+    ordering_fields = [
+        'created_at',
+
+    ]
+
+
+class ProductViewSet(viewsets.ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    filter_backends = [
+        SearchFilter,
+        DjangoFilterBackend,
+        OrderingFilter,
+    ]
+    search_fields = ['name', 'description',]
+    filterset_fields = [
+        'name',
+        'description',
+        'price',
+        'discount',
+        'archived',
+    ]
+    ordering_fields = [
+        'name',
+        'description',
+        'price',
+        'discount',
+    ]
+
 
 
 
