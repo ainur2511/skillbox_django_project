@@ -43,8 +43,11 @@ INSTALLED_APPS = [
 
     'shopapp',
     'myauth.apps.MyauthConfig',
+
     'crispy_forms',
-    'crispy_bootstrap4'
+    'crispy_bootstrap4',
+    'rest_framework',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -147,3 +150,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = reverse_lazy('myauth:about_me')
 LOGOUT_REDIRECT_URL = '/accounts/login/'
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
+    )
+
+}
