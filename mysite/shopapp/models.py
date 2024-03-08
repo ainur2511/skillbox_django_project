@@ -11,6 +11,10 @@ def product_preview_image_path(instance: 'Product', filename: str) -> str:
 
 
 class Product(models.Model):
+    """
+    Модель товаров которые можно заказать или положить в корзину
+    Заказы тут: :model: `shopapp.Order`
+    """
     class Meta:
         ordering = ['name', 'price']
         verbose_name = _('product')
