@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>
+        {% block title %}
+        Base title
+        {% endblock %}
+    </title>
+    <style>
+        body {
+            background-color: lightblue;
+        }
+        h1 {
+            color: darkblue;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Hello, {% firstof  user.first_name|capfirst username %}!</h1>
+    <div>
+        <form action="{% url "myauth:logout" %}" method="POST">
+            {% csrf_token %}
+            <button type="submit">Log out</button>
+        </form>
+    </div>
+</header>
+
+
+{% block body %}
+Base body
+{% endblock %}
+
+
+
+</body>
+
+</html>

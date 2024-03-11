@@ -65,9 +65,8 @@ class ProductViewSet(viewsets.ModelViewSet):
 class ProductsDetailsView(DetailView):
     template_name = 'shopapp/products-details.html'
     # model = Product
-    context_object_name = 'product'
     queryset = Product.objects.prefetch_related('images')
-
+    context_object_name = 'product'
 
 class ProductListView(ListView):
     template_name = 'shopapp/products-list.html'

@@ -11,6 +11,7 @@ urlpatterns = []
 
 urlpatterns += i18n_patterns(
     path('accounts/', include('myauth.urls')),
+        path('blog/', include('blogapp.urls')),
         path('shop/', include('shopapp.urls')),
         path('admin/doc/', include('django.contrib.admindocs.urls')),
         path('admin/', admin.site.urls),
