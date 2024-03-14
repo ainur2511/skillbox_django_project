@@ -1,3 +1,4 @@
+import logging
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 from django.http import HttpResponse, HttpRequest, HttpResponseRedirect, JsonResponse
 from django.urls import reverse, reverse_lazy
@@ -8,10 +9,11 @@ from django.views.generic.edit import ModelFormMixin
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
 from rest_framework.filters import SearchFilter, OrderingFilter
-
 from .forms import ProductForm, OrderForm
 from shopapp.models import Product, Order, ProductImage
 from .serializers import ProductSerializer, OrderSerializer
+
+logger = logging.getLogger(__name__)
 
 
 class OrderViewSet(viewsets.ModelViewSet):
@@ -43,7 +45,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         DjangoFilterBackend,
         OrderingFilter,
     ]
-    search_fields = ['name', 'description',]
+    search_fields = ['name', 'description', ]
     filterset_fields = [
         'name',
         'description',
@@ -59,14 +61,13 @@ class ProductViewSet(viewsets.ModelViewSet):
     ]
 
 
-
-
-
 class ProductsDetailsView(DetailView):
     template_name = 'shopapp/products-details.html'
     # model = Product
     queryset = Product.objects.prefetch_related('images')
     context_object_name = 'product'
+    # logger.info('Product Details View called')
+
 
 class ProductListView(ListView):
     template_name = 'shopapp/products-list.html'
@@ -118,7 +119,7 @@ class ProductDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView)
         return HttpResponseRedirect(success_url)
 
 
-class OrderCreateView(LoginRequiredMixin,  CreateView):
+class OrderCreateView(LoginRequiredMixin, CreateView):
     form_class = OrderForm
     model = Order
     success_url = reverse_lazy('shopapp:order_list')
@@ -135,7 +136,7 @@ class OrderUpdateView(LoginRequiredMixin, UpdateView):
             kwargs={'pk': self.object.pk})
 
 
-class OrderDeleteView(LoginRequiredMixin,  DeleteView):
+class OrderDeleteView(LoginRequiredMixin, DeleteView):
     model = Order
     success_url = reverse_lazy('shopapp:order_list')
 
