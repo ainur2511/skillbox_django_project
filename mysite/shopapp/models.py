@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.urls import reverse_lazy, reverse
 from django.utils.translation import gettext_lazy as _, gettext as __
 
 
@@ -22,7 +23,7 @@ class Product(models.Model):
 
     name = models.CharField(max_length=100, db_index=True)
     description = models.TextField(null=False, blank=True, db_index=True)
-    price = models.DecimalField(default=0, max_digits=8, decimal_places=2)
+    price = models.DecimalField(default=0, max_digits=10, decimal_places=2)
     discount = models.PositiveSmallIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     archived = models.BooleanField(default=False)
@@ -38,6 +39,9 @@ class Product(models.Model):
 
     def __str__(self):
         return __(self.name)
+
+    def get_absolute_url(self):
+        return reverse('shopapp:product-detail', kwargs={'pk': self.pk})
 
 
 def product_image_path(instance: 'ProductImage', filename: str) -> str:

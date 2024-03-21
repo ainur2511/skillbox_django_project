@@ -1,0 +1,16 @@
+ERROR 2024-03-21 14:39:50,356 django.request Internal Server Error: /ru/admin/shopapp/order/import_orders_csv/
+Traceback (most recent call last):
+  File "C:\skillbox\PythonDjango\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\skillbox\PythonDjango\.venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\skillbox\PythonDjango\mysite\shopapp\admin.py", line 138, in import_csv
+    orders = [Order(
+              ^^^^^^
+  File "C:\skillbox\PythonDjango\.venv\Lib\site-packages\django\db\models\base.py", line 543, in __init__
+    _setattr(self, field.name, rel_obj)
+  File "C:\skillbox\PythonDjango\.venv\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 284, in __set__
+    raise ValueError(
+ValueError: Cannot assign "'1'": "Order.user" must be a "User" instance.

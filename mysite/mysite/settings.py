@@ -4,13 +4,6 @@ from django.utils.translation import gettext_lazy as _
 
 from django.urls import reverse_lazy
 
-import sentry_sdk
-
-sentry_sdk.init(
-    dsn="https://e3de147086dbf745ddd472bc2a9cf048@o4506904097521664.ingest.us.sentry.io/4506904099618816",
-    traces_sample_rate=1.0,
-)
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -46,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admindocs',
+    'django.contrib.sitemaps',
 
     'shopapp',
     'myauth.apps.MyauthConfig',
@@ -162,7 +156,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = reverse_lazy('myauth:about_me')
 LOGOUT_REDIRECT_URL = '/accounts/login/'
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
-LOGFILE_NAME = BASE_DIR / 'mysite.log'
+LOGFILE_NAME = BASE_DIR / 'mysite1.log'
 LOGFILE_SIZE = 1024
 LOGFILE_COUNT = 3
 LOGGING = {

@@ -1,5 +1,6 @@
 import logging
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
+from django.contrib.syndication.views import Feed
 from django.http import HttpResponse, HttpRequest, HttpResponseRedirect, JsonResponse
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _, ngettext_lazy as ngt
@@ -118,6 +119,20 @@ class ProductDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView)
         self.object.save()
         return HttpResponseRedirect(success_url)
 
+
+class LastProductsFeed(Feed):
+    title = 'Shop'
+    description = 'Some description'
+    link = reverse_lazy('shopapp:products_list')
+
+    def items(self):
+        return Product.objects.filter(archived=False).order_by('-created_at')[:5]
+
+    def item_title(self, item: Product) -> str:
+        return item.name
+
+    def item_description(self, item: Product) -> str:
+        return item.description[:100]
 
 class OrderCreateView(LoginRequiredMixin, CreateView):
     form_class = OrderForm
