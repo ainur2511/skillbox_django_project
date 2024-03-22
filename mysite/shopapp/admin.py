@@ -2,6 +2,7 @@ import csv
 from io import TextIOWrapper
 from django.contrib import admin
 from django.contrib.auth.models import User
+from django.db import transaction
 from django.shortcuts import render, redirect
 from django.urls import path
 from .admin_mixins import ExportAsCSVMixin
@@ -108,6 +109,7 @@ class ProductInline(admin.TabularInline):
     model = Order.products.through
 
 
+
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     inlines = [ProductInline]
@@ -119,6 +121,7 @@ class OrderAdmin(admin.ModelAdmin):
     def user_verbose(self, obj: Order) -> str:
         return obj.user.first_name + ' ' + obj.user.last_name or obj.user.username
 
+    @transaction.atomic()
     def import_csv(self, request: HttpRequest) -> HttpResponse:
         if request.method == 'GET':
             form = CSVImportForm()
@@ -136,12 +139,14 @@ class OrderAdmin(admin.ModelAdmin):
                                  encoding=request.encoding
                                  )
         reader = csv.DictReader(csv_file)
-        orders = [Order(
-            delivery_address=row['delivery_adress'],
-            promocode=row['promocode'],
-            user=User.objects.get(username=row['user'])
-        ) for row in reader]
-        Order.objects.bulk_create(orders)
+        for row in reader:
+            order = Order.objects.create(
+                delivery_address=row['delivery_address'],
+                promocode=row['promocode'],
+                user_id=row['user_id'],
+            )
+            products_ids = row['products_ids'].split(',')
+            order.products.set(products_ids)
         self.message_user(request, 'Data from CSV Successfully imported')
         return redirect('..')
 
