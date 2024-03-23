@@ -1,7 +1,9 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import F
 from django.views.generic.edit import ModelFormMixin
 
+from shopapp.models import Order
 from .forms import *
 from .models import Profile
 from django.contrib.auth import authenticate, login
@@ -79,6 +81,10 @@ class ProfileUpdateView(UpdateView):
             return UserUpdateForm
         else:
             raise PermissionDenied
+
+
+class UserOrdersListView(LoginRequiredMixin, ListView):
+    queryset = (Order.objects.select_related('user').prefetch_related('products'))
 
 # @login_required
 # def edit_profile(request):

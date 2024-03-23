@@ -187,4 +187,5 @@ class OrdersDataExportView(UserPassesTestMixin, View):
 class HelloView(View):
     def get(self, request: HttpRequest) -> HttpResponse:
         some_text = _('Hello World!')
+        print(some_text)
         return HttpResponse(f'<h1>{some_text}</h1>')

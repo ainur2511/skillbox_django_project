@@ -21,5 +21,6 @@ urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
     path('user/<int:pk>/update', ProfileUpdateView.as_view(), name='update_profile'),
     path('users/', UsersView.as_view(), name='users'),
+    path('users/<int:user_id>/orders/', UserOrdersListView.as_view(), name='user_orders'),
     path('user/<int:pk>', AboutUserView.as_view(), name='about_user'),
 ]
