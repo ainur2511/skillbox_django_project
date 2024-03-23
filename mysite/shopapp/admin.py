@@ -1,9 +1,15 @@
+import csv
+from io import TextIOWrapper
 from django.contrib import admin
+from django.contrib.auth.models import User
+from django.db import transaction
+from django.shortcuts import render, redirect
+from django.urls import path
 from .admin_mixins import ExportAsCSVMixin
-
+from .forms import CSVImportForm
 from .models import Product, Order, ProductImage
 from django.db.models import QuerySet
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponse
 
 
 @admin.action(description='Archive products')
@@ -54,6 +60,38 @@ class ProductAdmin(admin.ModelAdmin, ExportAsCSVMixin):
         })
 
     ]
+
+    def import_csv(self, request: HttpRequest) -> HttpResponse:
+        if request.method == 'GET':
+            form = CSVImportForm()
+            context = {
+                'form': form,
+            }
+            return render(request, 'admin/csv_form.html', context=context)
+        form = CSVImportForm(request.POST, request.FILES)
+        if not form.is_valid():
+            context = {
+                'form': form,
+            }
+            return render(request, 'admin/csv_form.html', context=context, status=400)
+        csv_file = TextIOWrapper(form.files['csv_file'].file,
+                                 encoding=request.encoding
+                                 )
+        reader = csv.DictReader(csv_file)
+        products = [Product(**row) for row in reader]
+        Product.objects.bulk_create(products)
+        self.message_user(request, 'Data from CSV Successfully imported')
+        return redirect('..')
+    def get_urls(self):
+        urls = super().get_urls()
+        new_urls = [
+            path('import_products_csv/', self.import_csv, name="import_products_csv")
+        ]
+        return new_urls + urls
+
+    change_list_template = 'shopapp/product_changelist.html'
+
+
     def get_queryset(self, request):
         return Product.objects.select_related('created_by')
 
@@ -71,6 +109,7 @@ class ProductInline(admin.TabularInline):
     model = Order.products.through
 
 
+
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     inlines = [ProductInline]
@@ -82,5 +121,42 @@ class OrderAdmin(admin.ModelAdmin):
     def user_verbose(self, obj: Order) -> str:
         return obj.user.first_name + ' ' + obj.user.last_name or obj.user.username
 
+    @transaction.atomic()
+    def import_csv(self, request: HttpRequest) -> HttpResponse:
+        if request.method == 'GET':
+            form = CSVImportForm()
+            context = {
+                'form': form,
+            }
+            return render(request, 'admin/csv_form.html', context=context)
+        form = CSVImportForm(request.POST, request.FILES)
+        if not form.is_valid():
+            context = {
+                'form': form,
+            }
+            return render(request, 'admin/csv_form.html', context=context, status=400)
+        csv_file = TextIOWrapper(form.files['csv_file'].file,
+                                 encoding=request.encoding
+                                 )
+        reader = csv.DictReader(csv_file)
+        for row in reader:
+            order = Order.objects.create(
+                delivery_address=row['delivery_address'],
+                promocode=row['promocode'],
+                user_id=row['user_id'],
+            )
+            products_ids = row['products_ids'].split(',')
+            order.products.set(products_ids)
+        self.message_user(request, 'Data from CSV Successfully imported')
+        return redirect('..')
+
+    def get_urls(self):
+        urls = super().get_urls()
+        new_urls = [
+            path('import_orders_csv/', self.import_csv, name="import_orders_csv")
+        ]
+        return new_urls + urls
+
+    change_list_template = 'shopapp/order_changelist.html'
 
 

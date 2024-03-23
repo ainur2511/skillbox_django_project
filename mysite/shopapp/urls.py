@@ -14,6 +14,7 @@ from .views import (ProductsDetailsView,
                     HelloView,
                     ProductViewSet,
                     OrderViewSet,
+                    LastProductsFeed,
                     )
 
 
@@ -29,6 +30,7 @@ urlpatterns = [
     path("products/<int:pk>/", ProductsDetailsView.as_view(), name='products_details'),
     path("products/<int:pk>/update/", ProductUpdateView.as_view(), name='products_update'),
     path("products/<int:pk>/archive/", ProductDeleteView.as_view(), name='products_delete'),
+    path("products/latest/feed/", LastProductsFeed(), name='products_latest_feed'),
     path("orders/", OrderListView.as_view(), name='order_list'),
     path("orders/<int:pk>/", OrderDetailView.as_view(), name='orders_detail'),
     path("orders/<int:pk>/update/", OrderUpdateView.as_view(), name='orders_update'),

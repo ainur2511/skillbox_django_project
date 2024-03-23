@@ -42,3 +42,8 @@ class ProductForm(forms.ModelForm):
         fields = ['name', 'price', 'description', 'discount',]
 
     images = MultipleImageField()
+
+
+class CSVImportForm(forms.Form):
+    csv_file = forms.FileField()
+
