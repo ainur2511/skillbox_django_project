@@ -1,15 +1,18 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
-from django.db.models import F
-from django.views.generic.edit import ModelFormMixin
-
-from shopapp.models import Order
+from django.core.cache import cache
+from django.db.models import Prefetch
+from rest_framework.generics import get_object_or_404, GenericAPIView
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from shopapp.models import Order, Product
 from .forms import *
 from .models import Profile
 from django.contrib.auth import authenticate, login
-from django.contrib.auth.views import LoginView, LogoutView
-from django.urls import reverse_lazy, reverse
+from django.contrib.auth.views import LogoutView
+from django.urls import reverse_lazy
 from django.views.generic import TemplateView, CreateView, UpdateView, DetailView, ListView
+from .serializers import OrderSerializer
 
 
 class UsersView(ListView):
@@ -24,7 +27,6 @@ class AboutMeView(TemplateView):
 class AboutUserView(DetailView):
     queryset = User.objects.prefetch_related('profile')
     template_name = 'myauth/about_user.html'
-
 
 
 class RegisterView(CreateView):
@@ -46,7 +48,6 @@ class RegisterView(CreateView):
         )
         login(request=self.request, user=user)
         return response
-
 
 
 class ProfileUpdateView(UpdateView):
@@ -84,29 +85,30 @@ class ProfileUpdateView(UpdateView):
 
 
 class UserOrdersListView(LoginRequiredMixin, ListView):
-    queryset = (Order.objects.select_related('user').prefetch_related('products'))
+    template_name = 'myauth/order_list.html'
 
-# @login_required
-# def edit_profile(request):
-#     if request.method == 'POST':
-#         user_form = UserUpdateForm(instance=request.user,
-#                                    data=request.POST)
-#         profile_form = ProfileUpdateForm(
-#             instance=request.user.profile,
-#             data=request.POST,
-#             files=request.FILES)
-#         if user_form.is_valid() and profile_form.is_valid():
-#             user_form.save()
-#             profile_form.save()
-#     else:
-#         user_form = UserUpdateForm(instance=request.user)
-#         profile_form = ProfileUpdateForm(
-#             instance=request.user.profile)
-#     return render(request,
-#                   'myauth/update.html',
-#                   {'user_form': user_form,
-#                    'profile_form': profile_form})
+    def get_queryset(self):
+        self.owner = User.objects.get(pk=self.kwargs['user_id'])
+        return Order.objects.filter(user=self.owner).prefetch_related('products')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['owner'] = self.owner
+        return context
 
 
 class Logout(LogoutView):
     next_page = reverse_lazy('myauth:login')
+
+
+class UserOrdersExportView(APIView):
+    def get(self, request, user_id):
+        cache_key = f'user_{user_id}_orders'
+        orders = cache.get(cache_key)
+        if orders is None:
+            user = get_object_or_404(User, pk=user_id)
+            orders = Order.objects.filter(user=user).order_by('id').prefetch_related(Prefetch('products', queryset=Product.objects.only('id')))
+            cache.set(cache_key, orders, timeout=20)
+        serializer = OrderSerializer(orders, many=True)
+        return Response(serializer.data)
+    
