@@ -23,4 +23,5 @@ urlpatterns = [
     path('users/', UsersView.as_view(), name='users'),
     path('users/<int:user_id>/orders/', UserOrdersListView.as_view(), name='user_orders'),
     path('user/<int:pk>', AboutUserView.as_view(), name='about_user'),
+    path('users/<int:user_id>/orders/export/', UserOrdersExportView.as_view(), name='user_orders_export'),
 ]
